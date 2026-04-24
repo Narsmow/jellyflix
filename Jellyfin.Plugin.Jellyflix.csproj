@@ -13,8 +13,8 @@
        Jellyfin rejects plugins whose ABI doesn't match the running server.
        Bump alongside Jellyfin server releases. -->
   <ItemGroup>
-    <PackageReference Include="Jellyfin.Controller" Version="10.11.*" />
-    <PackageReference Include="Jellyfin.Model" Version="10.11.*" />
+    <PackageReference Include="Jellyfin.Controller" Version="10.11.8" />
+    <PackageReference Include="Jellyfin.Model" Version="10.11.8" />
   </ItemGroup>
 
   <!-- Everything below ends up inside the compiled DLL as embedded
