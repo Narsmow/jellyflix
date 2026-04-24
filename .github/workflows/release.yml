@@ -1,0 +1,128 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Extract version from tag
+        id: v
+        run: |
+          RAW="${GITHUB_REF#refs/tags/v}"
+          if [[ "$RAW" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            VERSION="${RAW}.0"
+          else
+            VERSION="$RAW"
+          fi
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: |
+          dotnet build \
+            --configuration Release \
+            --no-restore \
+            /p:Version=${{ steps.v.outputs.version }}
+
+      - name: Write meta.json
+        run: |
+          cat > meta.json <<EOF
+          {
+            "category": "General",
+            "guid": "f2c9d8e4-3a1b-4c6d-9e7f-8a2b1c3d4e5f",
+            "name": "Jellyflix",
+            "description": "Netflix-style UI with counter-seasonal recommendations.",
+            "owner": "${{ github.repository_owner }}",
+            "overview": "A Netflix-style frontend for Jellyfin. Embedded web UI, no separate hosting.",
+            "targetAbi": "10.11.0.0",
+            "framework": "net8.0",
+            "version": "${{ steps.v.outputs.version }}",
+            "changelog": "See GitHub release notes.",
+            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          }
+          EOF
+
+      - name: Package zip
+        id: pkg
+        run: |
+          DIST=dist
+          ZIP="jellyflix_${{ steps.v.outputs.version }}.zip"
+          mkdir -p "$DIST"
+          cp bin/Release/net8.0/Jellyfin.Plugin.Jellyflix.dll "$DIST/"
+          cp meta.json "$DIST/"
+          (cd "$DIST" && zip -r "../$ZIP" .)
+          MD5=$(md5sum "$ZIP" | awk '{print $1}')
+          echo "zip=$ZIP" >> "$GITHUB_OUTPUT"
+          echo "md5=$MD5" >> "$GITHUB_OUTPUT"
+
+      - name: Update manifest.json
+        run: |
+          python3 - <<'PY'
+          import json, os, datetime
+          version  = os.environ["VERSION"]
+          md5      = os.environ["MD5"]
+          zip_name = os.environ["ZIP"]
+          repo     = os.environ["REPO"]
+          url = f"https://github.com/{repo}/releases/download/v{version[:-2] if version.endswith('.0') else version}/{zip_name}"
+
+          with open("manifest.json") as f:
+              manifest = json.load(f)
+
+          entry = {
+              "version": version,
+              "changelog": "See GitHub release notes.",
+              "targetAbi": "10.11.0.0",
+              "sourceUrl": url,
+              "checksum": md5,
+              "timestamp": datetime.datetime.utcnow().isoformat(timespec='seconds') + "Z",
+          }
+
+          for plugin in manifest:
+              versions = plugin.setdefault("versions", [])
+              versions[:] = [v for v in versions if v.get("version") != version]
+              versions.insert(0, entry)
+
+          with open("manifest.json", "w") as f:
+              json.dump(manifest, f, indent=2)
+              f.write("\n")
+          PY
+        env:
+          VERSION: ${{ steps.v.outputs.version }}
+          MD5:     ${{ steps.pkg.outputs.md5 }}
+          ZIP:     ${{ steps.pkg.outputs.zip }}
+          REPO:    ${{ github.repository }}
+
+      - name: Commit manifest
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add manifest.json
+          git diff --cached --quiet || git commit -m "Publish ${{ steps.v.outputs.version }} to manifest"
+          git push origin HEAD:${{ github.event.repository.default_branch }}
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ steps.pkg.outputs.zip }}
+          generate_release_notes: true
