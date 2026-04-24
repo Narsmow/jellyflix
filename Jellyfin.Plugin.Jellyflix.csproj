@@ -10,57 +10,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Jellyfin.Controller" Version="10.11.8" />
-    <PackageReference Include="Jellyfin.Model" Version="10.11.8" />
+    <PackageReference Include="Jellyfin.Controller" Version="10.11.6" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="src/Configuration/configPage.html">
       <LogicalName>Jellyfin.Plugin.Jellyflix.Configuration.configPage.html</LogicalName>
     </EmbeddedResource>
-    <EmbeddedResource Include="web/index.html">
-      <LogicalName>Jellyfin.Plugin.Jellyflix.web.index.html</LogicalName>
-    </EmbeddedResource>
-    <EmbeddedResource Include="web/assets/app.css">
-      <LogicalName>Jellyfin.Plugin.Jellyflix.web.assets.app.css</LogicalName>
-    </EmbeddedResource>
-    <EmbeddedResource Include="web/assets/app.js">
-      <LogicalName>Jellyfin.Plugin.Jellyflix.web.assets.app.js</LogicalName>
-    </EmbeddedResource>
-  </ItemGroup>
-
-</Project><Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <RootNamespace>Jellyfin.Plugin.Jellyflix</RootNamespace>
-    <AssemblyName>Jellyfin.Plugin.Jellyflix</AssemblyName>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <NoWarn>1591;SA1600;CA1819</NoWarn>
-  </PropertyGroup>
-
-  <!-- Jellyfin server interfaces. Match the target server's minor version —
-       Jellyfin rejects plugins whose ABI doesn't match the running server.
-       Bump alongside Jellyfin server releases. -->
-  <ItemGroup>
-    <PackageReference Include="Jellyfin.Controller" Version="10.11.8" />
-    <PackageReference Include="Jellyfin.Model" Version="10.11.8" />
-  </ItemGroup>
-
-  <!-- Everything below ends up inside the compiled DLL as embedded
-       resources. That means the web UI ships with the plugin — users
-       click Install once and get the whole thing. -->
-  <ItemGroup>
-    <!-- Admin config page (served by Jellyfin at /web/ConfigurationPage).
-         LogicalName is explicit so the resource path doesn't include the
-         "src." folder segment — Plugin.cs looks for
-         Jellyfin.Plugin.Jellyflix.Configuration.configPage.html -->
-    <EmbeddedResource Include="src/Configuration/configPage.html">
-      <LogicalName>Jellyfin.Plugin.Jellyflix.Configuration.configPage.html</LogicalName>
-    </EmbeddedResource>
-
-    <!-- Standalone web UI — served by StaticFilesController at /Jellyflix/Web/ -->
     <EmbeddedResource Include="web/index.html">
       <LogicalName>Jellyfin.Plugin.Jellyflix.web.index.html</LogicalName>
     </EmbeddedResource>
