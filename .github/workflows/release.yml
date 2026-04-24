@@ -22,7 +22,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: '9.0.x'
 
       - name: Extract version from tag
         id: v
@@ -56,7 +56,7 @@ jobs:
             "owner": "${{ github.repository_owner }}",
             "overview": "A Netflix-style frontend for Jellyfin. Embedded web UI, no separate hosting.",
             "targetAbi": "10.11.0.0",
-            "framework": "net8.0",
+            "framework": "net9.0",
             "version": "${{ steps.v.outputs.version }}",
             "changelog": "See GitHub release notes.",
             "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
@@ -69,7 +69,7 @@ jobs:
           DIST=dist
           ZIP="jellyflix_${{ steps.v.outputs.version }}.zip"
           mkdir -p "$DIST"
-          cp bin/Release/net8.0/Jellyfin.Plugin.Jellyflix.dll "$DIST/"
+          cp bin/Release/net9.0/Jellyfin.Plugin.Jellyflix.dll "$DIST/"
           cp meta.json "$DIST/"
           (cd "$DIST" && zip -r "../$ZIP" .)
           MD5=$(md5sum "$ZIP" | awk '{print $1}')
