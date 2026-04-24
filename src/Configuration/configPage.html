@@ -1,0 +1,247 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Jellyflix</title>
+</head>
+<body>
+<div id="JellyflixConfigPage"
+     data-role="page"
+     class="page type-interior pluginConfigurationPage"
+     data-require="emby-button,emby-input,emby-checkbox">
+
+<div data-role="content">
+<div class="content-primary">
+
+<style>
+  #JellyflixConfigPage .jx-hero {
+    padding: 22px 22px 20px;
+    border: 1px solid #2a2a2a;
+    border-radius: 6px;
+    margin-bottom: 24px;
+    background: linear-gradient(135deg, #1a1513 0%, #0e0b0a 100%);
+    color: #f5ede0;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-wrap: wrap;
+  }
+  #JellyflixConfigPage .jx-hero h1 {
+    margin: 0;
+    font-size: 28px;
+    letter-spacing: -0.01em;
+  }
+  #JellyflixConfigPage .jx-hero .jx-tagline {
+    color: #b3a596;
+    font-size: 13px;
+    margin-top: 2px;
+  }
+  #JellyflixConfigPage .jx-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-left: auto;
+  }
+  #JellyflixConfigPage .jx-status.ready   { background: #2d5a3d; color: #b8f5c9; }
+  #JellyflixConfigPage .jx-status.starting{ background: #555; color: #ddd; }
+  #JellyflixConfigPage .jx-status.degraded{ background: #7a5a1e; color: #ffe0a3; }
+  #JellyflixConfigPage .jx-status.error   { background: #7a2020; color: #ffb0b0; }
+  #JellyflixConfigPage .jx-dot {
+    width: 8px; height: 8px; border-radius: 50%; background: currentColor;
+  }
+  #JellyflixConfigPage .jx-open {
+    margin-top: 14px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    background: #c8562c;
+    color: #0e0b0a;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  #JellyflixConfigPage .jx-open:hover { background: #e26b3a; }
+  #JellyflixConfigPage .jx-checks {
+    margin-top: 18px;
+    padding: 0;
+    list-style: none;
+    font-size: 13px;
+  }
+  #JellyflixConfigPage .jx-checks li {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 4px 0;
+  }
+  #JellyflixConfigPage .jx-check-mark.ok   { color: #4caf50; }
+  #JellyflixConfigPage .jx-check-mark.fail { color: #f44336; }
+  #JellyflixConfigPage .jx-check-key {
+    font-family: ui-monospace, monospace;
+    color: #8a7a6d;
+    min-width: 160px;
+    font-size: 12px;
+  }
+  #JellyflixConfigPage .jx-section { margin-top: 28px; }
+  #JellyflixConfigPage .jx-section h2 { font-size: 18px; margin-bottom: 10px; }
+  #JellyflixConfigPage .jx-section .fieldDescription { font-size: 12px; color: #999; }
+</style>
+
+<!-- ─── status hero ─────────────────────────────────────────── -->
+<div class="jx-hero">
+  <div style="flex: 1; min-width: 240px;">
+    <h1>Jellyflix</h1>
+    <div class="jx-tagline">Netflix-style UI &middot; seasonal &amp; counter-seasonal recommendations</div>
+    <button type="button" class="jx-open" id="jxOpen">Open Jellyflix →</button>
+  </div>
+  <div class="jx-status starting" id="jxStatus">
+    <span class="jx-dot"></span>
+    <span id="jxStatusText">Checking…</span>
+  </div>
+</div>
+
+<ul class="jx-checks" id="jxChecks"></ul>
+
+<!-- ─── configuration form ──────────────────────────────────── -->
+<form id="JellyflixConfigForm">
+
+  <div class="jx-section">
+    <h2>Anti-pattern detection</h2>
+
+    <div class="inputContainer">
+      <label class="inputLabel" for="MinHistoryThreshold">Minimum history threshold</label>
+      <input is="emby-input" id="MinHistoryThreshold" name="MinHistoryThreshold" type="number" min="1" max="50" />
+      <div class="fieldDescription">
+        Watches needed inside a seasonal window before we trust the pattern.
+        Fewer → more willing to pivot on thin data; more → only pivots after you've been observed for several seasons.
+      </div>
+    </div>
+
+    <div class="inputContainer">
+      <label class="inputLabel" for="AffinityThreshold">Affinity threshold (0–1)</label>
+      <input is="emby-input" id="AffinityThreshold" name="AffinityThreshold" type="number" step="0.05" min="0" max="1" />
+      <div class="fieldDescription">Above this overlap with expected tags, treat the user as pro-seasonal.</div>
+    </div>
+
+    <div class="inputContainer">
+      <label class="inputLabel" for="AversionThreshold">Aversion threshold (0–1)</label>
+      <input is="emby-input" id="AversionThreshold" name="AversionThreshold" type="number" step="0.05" min="0" max="1" />
+      <div class="fieldDescription">Below this overlap, pivot to the user's actual period signature.</div>
+    </div>
+  </div>
+
+  <div class="jx-section">
+    <h2>UX preferences</h2>
+
+    <label class="checkboxContainer">
+      <input is="emby-checkbox" id="AutoplayWithSoundOnHover" name="AutoplayWithSoundOnHover" type="checkbox" />
+      <span>Autoplay previews with sound on hover</span>
+    </label>
+
+    <div class="inputContainer">
+      <label class="inputLabel" for="AbandonedThresholdDays">Abandoned after (days)</label>
+      <input is="emby-input" id="AbandonedThresholdDays" name="AbandonedThresholdDays" type="number" min="1" max="365" />
+      <div class="fieldDescription">Unfinished items idle this long are hidden from Continue Watching.</div>
+    </div>
+  </div>
+
+  <br />
+  <button is="emby-button" type="submit" class="raised button-submit block emby-button">
+    <span>Save</span>
+  </button>
+</form>
+
+</div><!-- .content-primary -->
+</div><!-- data-role=content -->
+
+<script type="text/javascript">
+(function () {
+  const pluginId = 'f2c9d8e4-3a1b-4c6d-9e7f-8a2b1c3d4e5f';
+  const page = document.getElementById('JellyflixConfigPage');
+
+  // ─── health poll: verify install worked ─────────────────────────
+  async function poll() {
+    try {
+      const resp = await fetch(ApiClient.getUrl('Jellyflix/Health'));
+      const data = await resp.json();
+      renderStatus(data);
+    } catch (e) {
+      renderStatus({ status: 'Error', error: 'Could not reach /Jellyflix/Health', checks: [] });
+    }
+  }
+
+  function renderStatus(data) {
+    const el = page.querySelector('#jxStatus');
+    const text = page.querySelector('#jxStatusText');
+    const klass = (data.status || 'starting').toLowerCase();
+    el.className = 'jx-status ' + klass;
+    text.textContent = (data.status || 'Starting') + (data.version ? ' · v' + data.version : '');
+
+    const checks = page.querySelector('#jxChecks');
+    checks.innerHTML = '';
+    (data.checks || []).forEach(c => {
+      const li = document.createElement('li');
+      li.innerHTML =
+        '<span class="jx-check-mark ' + (c.ok ? 'ok' : 'fail') + '">' + (c.ok ? '✓' : '✗') + '</span>' +
+        '<span class="jx-check-key">' + c.key + '</span>' +
+        '<span>' + c.message + '</span>';
+      checks.appendChild(li);
+    });
+    if (data.error) {
+      const li = document.createElement('li');
+      li.innerHTML = '<span class="jx-check-mark fail">✗</span><span class="jx-check-key">error</span><span>' + data.error + '</span>';
+      checks.appendChild(li);
+    }
+  }
+
+  // ─── open the web UI ────────────────────────────────────────────
+  page.querySelector('#jxOpen').addEventListener('click', () => {
+    window.open(ApiClient.getUrl('Jellyflix/Web'), '_blank');
+  });
+
+  // ─── config form: load + save ───────────────────────────────────
+  page.addEventListener('viewshow', () => {
+    Dashboard.showLoadingMsg();
+    ApiClient.getPluginConfiguration(pluginId).then(cfg => {
+      page.querySelector('#MinHistoryThreshold').value = cfg.MinHistoryThreshold;
+      page.querySelector('#AffinityThreshold').value   = cfg.AffinityThreshold;
+      page.querySelector('#AversionThreshold').value   = cfg.AversionThreshold;
+      page.querySelector('#AutoplayWithSoundOnHover').checked = !!cfg.AutoplayWithSoundOnHover;
+      page.querySelector('#AbandonedThresholdDays').value = cfg.AbandonedThresholdDays;
+      Dashboard.hideLoadingMsg();
+    });
+    poll();
+    // Re-poll every 5s in case the bootstrapper is still running
+    page._jxPoll = setInterval(poll, 5000);
+  });
+
+  page.addEventListener('viewhide', () => {
+    clearInterval(page._jxPoll);
+  });
+
+  page.querySelector('#JellyflixConfigForm').addEventListener('submit', e => {
+    e.preventDefault();
+    Dashboard.showLoadingMsg();
+    ApiClient.getPluginConfiguration(pluginId).then(cfg => {
+      cfg.MinHistoryThreshold = parseInt(page.querySelector('#MinHistoryThreshold').value, 10);
+      cfg.AffinityThreshold   = parseFloat(page.querySelector('#AffinityThreshold').value);
+      cfg.AversionThreshold   = parseFloat(page.querySelector('#AversionThreshold').value);
+      cfg.AutoplayWithSoundOnHover = page.querySelector('#AutoplayWithSoundOnHover').checked;
+      cfg.AbandonedThresholdDays = parseInt(page.querySelector('#AbandonedThresholdDays').value, 10);
+      ApiClient.updatePluginConfiguration(pluginId, cfg).then(Dashboard.processPluginConfigurationUpdateResult);
+    });
+  });
+
+  // Kick off once now in case viewshow already fired
+  poll();
+})();
+</script>
+
+</div>
+</body>
+</html>
