@@ -4,9 +4,9 @@
     "name": "Jellyflix",
     "description": "A Netflix-style frontend for Jellyfin with seasonal and counter-seasonal recommendations.",
     "overview": "Smarter recommendations including personal counter-seasonal detection. Embedded web UI, no separate hosting.",
-    "owner": "YOUR_GITHUB_USERNAME",
+    "owner": "Narsmow",
     "category": "General",
     "imageUrl": "",
-    "versions": []
+    "versions": [0.1]
   }
 ]
