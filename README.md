@@ -111,7 +111,7 @@ Three layers:
 
 1. **Item-to-item similarity** — "Because you watched X" rails using Jellyfin's item metadata.
 2. **Seasonal boost** — when you're inside a seasonal window (Halloween, Christmas, Valentine's, etc.), push items with matching tags.
-3. **Counter-seasonal detection** — *the novel layer*. For each seasonal window, check the user's historical tag overlap during that window. Four outcomes:
+3. **Counter-seasonal detection** — _the novel layer_. For each seasonal window, check the user's historical tag overlap during that window. Four outcomes:
    - **Pro-seasonal** (overlap ≥ 0.6) — lean hard into expected tags.
    - **Counter-seasonal** (overlap ≤ 0.15) — pivot. Extract what they actually watch during this window, subtract their year-round baseline, and recommend items matching the remainder (their "period signature").
    - **Neutral** — blend expected and baseline.
