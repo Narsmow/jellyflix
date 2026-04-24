@@ -13,7 +13,7 @@ You do this **once**. Future updates are automatic via Jellyfin's plugin catalog
 1. In Jellyfin, go to **Dashboard → Plugins → Repositories**.
 2. Click the **+** button and add a new repository:
    - **Name:** `Jellyflix`
-   - **Repository URL:** `https://raw.githubusercontent.com/YOUR_GITHUB_USERNAME/jellyflix/main/manifest.json`
+   - **Repository URL:** `https://raw.githubusercontent.com/Narsmow/jellyflix/main/manifest.json`
 3. Go to **Dashboard → Plugins → Catalog**. "Jellyflix" will be in the list under General.
 4. Click **Install**. Wait for it to download.
 5. Restart Jellyfin when prompted.
