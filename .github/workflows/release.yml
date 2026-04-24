@@ -86,8 +86,18 @@ jobs:
           repo     = os.environ["REPO"]
           url = f"https://github.com/{repo}/releases/download/v{version[:-2] if version.endswith('.0') else version}/{zip_name}"
 
-          with open("manifest.json") as f:
-              manifest = json.load(f)
+          try:
+              with open("manifest.json") as f:
+                  manifest = json.load(f)
+          except (FileNotFoundError, json.JSONDecodeError):
+              manifest = [{
+                  "guid": "f2c9d8e4-3a1b-4c6d-9e7f-8a2b1c3d4e5f",
+                  "name": "Jellyflix",
+                  "description": "Netflix-style UI with counter-seasonal recommendations.",
+                  "owner": repo.split("/")[0],
+                  "category": "General",
+                  "versions": []
+              }]
 
           entry = {
               "version": version,
@@ -95,13 +105,14 @@ jobs:
               "targetAbi": "10.11.0.0",
               "sourceUrl": url,
               "checksum": md5,
-              "timestamp": datetime.datetime.utcnow().isoformat(timespec='seconds') + "Z",
+              "timestamp": datetime.datetime.now(datetime.UTC).isoformat(timespec='seconds').replace('+00:00', 'Z'),
           }
 
           for plugin in manifest:
-              versions = plugin.setdefault("versions", [])
-              versions[:] = [v for v in versions if v.get("version") != version]
-              versions.insert(0, entry)
+              raw = plugin.get("versions", [])
+              # Defensive: strip anything that isn't a proper dict entry
+              cleaned = [v for v in raw if isinstance(v, dict) and v.get("version") != version]
+              plugin["versions"] = [entry] + cleaned
 
           with open("manifest.json", "w") as f:
               json.dump(manifest, f, indent=2)
