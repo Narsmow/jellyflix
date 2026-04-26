@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Jellyflix — your library, your rules</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/app.css" />
+</head>
+<body>
+
+<!-- ─── top bar ─────────────────────────────────────────────────── -->
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark">◐</span>
+    <span class="brand-name">Jellyflix</span>
+  </div>
+
+  <nav class="nav">
+    <a href="#" class="active">Home</a>
+    <a href="#">Films</a>
+    <a href="#">Series</a>
+    <a href="#">My list</a>
+  </nav>
+
+  <div class="topbar-right">
+    <button class="ui-switch" id="ui-switch" type="button" title="Switch to default Jellyfin">
+      <span class="ui-switch-icon" aria-hidden="true">⇄</span>
+      <span class="ui-switch-label">Default UI</span>
+    </button>
+
+    <div class="profile-switcher" id="profile-switcher">
+      <button class="profile-pill" type="button">
+        <span class="avatar" style="--avatar: #c8562c;">L</span>
+        <span>Léa</span>
+        <span class="caret">▾</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ─── hero ────────────────────────────────────────────────────── -->
+<section class="hero hero-loading" id="hero">
+  <div class="hero-bg" id="hero-bg"></div>
+  <div class="hero-gradient"></div>
+  <div class="hero-content">
+    <p class="eyebrow">Loading&hellip;</p>
+    <h1 class="hero-title">&nbsp;</h1>
+    <p class="hero-meta">&nbsp;</p>
+    <p class="hero-desc" style="display:none"></p>
+    <div class="hero-actions">
+      <button class="btn btn-primary" id="hero-play" type="button">▶ Play</button>
+      <button class="btn btn-ghost" id="hero-info" type="button">More info</button>
+    </div>
+  </div>
+</section>
+
+<!-- ─── mood strip (improvement over Netflix) ──────────────────── -->
+<section class="mood-strip">
+  <span class="mood-label">Feeling</span>
+  <div class="moods" id="moods">
+    <button class="mood" data-mood="cozy">cozy</button>
+    <button class="mood" data-mood="thrilling">thrilling</button>
+    <button class="mood" data-mood="mindless">mindless</button>
+    <button class="mood" data-mood="challenging">challenging</button>
+    <button class="mood" data-mood="short">under 90 min</button>
+    <button class="mood" data-mood="epic">epic</button>
+  </div>
+  <span class="mood-hint">applies to this session only</span>
+</section>
+
+<!-- ─── rails mount point ──────────────────────────────────────── -->
+<main id="rails"></main>
+
+<!-- ─── "why" modal ────────────────────────────────────────────── -->
+<dialog id="why-modal" class="why-modal">
+  <button class="why-close" aria-label="close">×</button>
+  <p class="why-eyebrow">Why this row</p>
+  <h3 id="why-title">—</h3>
+  <p id="why-body">—</p>
+</dialog>
+
+<footer class="foot">
+  <span>Jellyflix &middot; open source Jellyfin plugin</span>
+  <span class="foot-right">your library &middot; your rules &middot; no ads &middot; no upsell</span>
+</footer>
+
+<script src="assets/app.js"></script>
+</body>
+</html>

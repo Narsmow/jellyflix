@@ -1,0 +1,17 @@
+# Build output
+bin/
+obj/
+dist/
+*.zip
+meta.json
+
+# IDE
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+
+# OS
+.DS_Store
+Thumbs.db
