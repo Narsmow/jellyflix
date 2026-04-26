@@ -36,11 +36,11 @@ jobs:
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
 
       - name: Restore
-        run: dotnet restore
+        run: dotnet restore Jellyfin.Plugin.Jellyflix.csproj
 
       - name: Build
         run: |
-          dotnet build \
+          dotnet build Jellyfin.Plugin.Jellyflix.csproj \
             --configuration Release \
             --no-restore \
             /p:Version=${{ steps.v.outputs.version }}
