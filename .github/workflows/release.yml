@@ -128,9 +128,21 @@ jobs:
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # The workflow runs on the tag (detached HEAD), but `main` may have
+          # advanced (prior release runs, or just normal commits). Apply the
+          # manifest change on top of current main, not on top of the tag.
+          BRANCH="${{ github.event.repository.default_branch }}"
+          cp manifest.json /tmp/manifest.json
+          git fetch origin "$BRANCH"
+          git checkout "$BRANCH"
+          git pull --ff-only origin "$BRANCH"
+          cp /tmp/manifest.json manifest.json
+
           git add manifest.json
-          git diff --cached --quiet || git commit -m "Publish ${{ steps.v.outputs.version }} to manifest"
-          git push origin HEAD:${{ github.event.repository.default_branch }}
+          git diff --cached --quiet && exit 0
+          git commit -m "Publish ${{ steps.v.outputs.version }} to manifest"
+          git push origin "$BRANCH"
 
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
