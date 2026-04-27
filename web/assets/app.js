@@ -1,9 +1,11 @@
 /* ══════════════════════════════════════════════════════════════════
    Jellyflix frontend
-   Loaded either:
-     A) As a Jellyfin dashboard page — ApiClient and window.ApiClient
-        are already present; we derive the server URL and token from them.
-     B) Standalone — user passes ?server=<url>&token=<access-token>&userId=<guid>
+   Credential resolution order:
+     1. window.ApiClient (set when embedded as a Jellyfin dashboard page)
+     2. URL query params (?server=&token=&userId= — explicit / dev override)
+     3. Jellyfin's own localStorage 'jellyfin_credentials' (same-origin shared
+        with /web/, so any tab signed in to Jellyfin authorises this page too)
+     4. None — render a "Sign in to Jellyfin" prompt with a return-redirect
    ══════════════════════════════════════════════════════════════════ */
 
 // ── Bootstrap ───────────────────────────────────────────────────────────────
@@ -12,12 +14,37 @@ const Api = (() => {
   const client = window.ApiClient ?? window.parent?.ApiClient ?? null;
   const params = new URLSearchParams(location.search);
 
+  function fromLocalStorage() {
+    try {
+      const raw = localStorage.getItem('jellyfin_credentials');
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      const server = (parsed.Servers || []).find(s => s.AccessToken && s.UserId);
+      if (!server) return null;
+      const addr = server.ManualAddress || server.LocalAddress || location.origin;
+      return {
+        base:   addr.replace(/\/$/, ''),
+        token:  server.AccessToken,
+        userId: server.UserId
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  const ls = !client && !params.get('userId') ? fromLocalStorage() : null;
+
   const base = client
     ? client.serverAddress().replace(/\/$/, '')
-    : (params.get('server') ?? '').replace(/\/$/, '');
+    : (params.get('server') ?? ls?.base ?? location.origin).replace(/\/$/, '');
 
-  const token  = client ? client.accessToken()      : (params.get('token')  ?? '');
-  const userId = client ? client.getCurrentUserId() : (params.get('userId') ?? '');
+  const token = client
+    ? client.accessToken()
+    : (params.get('token') ?? ls?.token ?? '');
+
+  const userId = client
+    ? client.getCurrentUserId()
+    : (params.get('userId') ?? ls?.userId ?? '');
 
   function headers() {
     const h = { 'Content-Type': 'application/json' };
@@ -81,7 +108,7 @@ function wireUiSwitch() {
 async function loadRails() {
   const root = document.getElementById('rails');
   if (!Api.userId) {
-    renderMessage(root, 'Sign in to see your recommendations.');
+    renderSignInPrompt(root);
     return;
   }
 
@@ -215,6 +242,29 @@ function renderMessage(root, message) {
   p.className   = 'rail-error';
   p.textContent = message;
   root.appendChild(p);
+}
+
+function renderSignInPrompt(root) {
+  root.innerHTML = '';
+  const wrap = document.createElement('div');
+  wrap.className = 'rail-error';
+
+  const p = document.createElement('p');
+  p.textContent = "You're not signed in to Jellyfin in this browser. Sign in there first, then come back.";
+  wrap.appendChild(p);
+
+  const link = document.createElement('a');
+  link.className   = 'rail-retry';
+  link.textContent = 'Sign in to Jellyfin →';
+  link.href        = `${location.origin}/web/index.html`;
+  // After signing in, send them straight back here.
+  try {
+    const ret = encodeURIComponent(location.pathname + location.search);
+    link.href = `${location.origin}/web/index.html?returnUrl=${ret}`;
+  } catch { /* keep plain href */ }
+  wrap.appendChild(link);
+
+  root.appendChild(wrap);
 }
 
 function renderErrorWithRetry(root, message) {
@@ -473,7 +523,12 @@ function wireMoodChips() {
 // ── Profile button ───────────────────────────────────────────────────────────
 
 function wireProfileButton() {
-  if (!Api.userId) return;
+  // Not signed in → swap the profile pill out for a Sign-in button so the
+  // user has a clear, always-visible way to authenticate.
+  if (!Api.userId) {
+    showSignInButton();
+    return;
+  }
 
   Api.get(`/Users/${Api.userId}`).then(user => {
     const pill   = document.querySelector('.profile-pill span:not(.avatar):not(.caret)');
@@ -486,7 +541,28 @@ function wireProfileButton() {
       const hue = [...(user.Id ?? '')].reduce((a, c) => a + c.charCodeAt(0), 0) % 360;
       avatar.style.setProperty('--avatar', `hsl(${hue} 60% 45%)`);
     }
-  }).catch(() => { /* profile pill stays at its placeholder */ });
+  }).catch(err => {
+    // 401/403 here means the credentials we found are stale or invalid —
+    // surface the same Sign-in path so the user can recover.
+    if (err.status === 401 || err.status === 403) {
+      showSignInButton();
+    }
+  });
+}
+
+function showSignInButton() {
+  const wrap = document.getElementById('profile-switcher');
+  if (!wrap) return;
+
+  const ret = encodeURIComponent(location.pathname + location.search);
+  const href = `${location.origin}/web/index.html?returnUrl=${ret}`;
+
+  wrap.innerHTML = '';
+  const a = document.createElement('a');
+  a.href      = href;
+  a.className = 'sign-in-btn';
+  a.textContent = 'Sign in';
+  wrap.appendChild(a);
 }
 
 // ── Playback ─────────────────────────────────────────────────────────────────

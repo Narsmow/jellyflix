@@ -115,6 +115,29 @@ em { font-style: italic; color: var(--ink); }
 }
 
 .profile-switcher { /* no margin needed; topbar-right handles spacing */ }
+
+.sign-in-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 18px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--bg);
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  text-decoration: none;
+  transition: background 150ms ease, transform 120ms ease;
+}
+.sign-in-btn:hover {
+  background: var(--accent-hi);
+  border-color: var(--accent-hi);
+  transform: translateY(-1px);
+}
+.sign-in-btn:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
 .profile-pill {
   display: flex; align-items: center; gap: 10px;
   padding: 6px 12px 6px 6px;
@@ -540,6 +563,8 @@ main#rails {
   border-radius: var(--radius);
   font-family: var(--font-body);
   cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
   transition: background 150ms ease, border-color 150ms ease;
 }
 .rail-retry:hover {
